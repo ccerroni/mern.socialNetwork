@@ -13,20 +13,19 @@ const config = require('config');
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const profile = await (
-      await Profile.findOne({ user: req.user.id })
-    ).populate('user', ['name', 'avatar']);
+    const profile = await Profile.findOne({
+      user: req.user.id
+    }).populate('user', ['name', 'avatar']);
 
     if (!profile) {
-      return res.status(400).json({ msg: 'There is no ptofile for this user' });
+      return res.status(400).json({ msg: 'There is no profile for this user' });
     }
 
     res.json(profile);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ msg: 'Server Error' });
+    res.status(500).send('Server Error');
   }
-  res.send('Profile route');
 });
 
 // @route   POST api/profile
@@ -78,12 +77,13 @@ router.post(
     if (twitter) profileFields.social.twitter = twitter;
     if (instagram) profileFields.social.instagram = instagram;
     if (linkedin) profileFields.social.linkedin = linkedin;
-    if (skills)
+    if (skills) {
       profileFields.skills = skills.split(',').map(skill => skill.trim());
+    }
 
     try {
       let profile = Profile.findOne({ user: req.user.id });
-      if (profile && profile.skills) {
+      if (profile) {
         // Update
         profile = await Profile.findOneAndUpdate(
           { user: req.user.id },
