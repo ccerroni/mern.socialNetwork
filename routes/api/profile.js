@@ -81,25 +81,25 @@ router.post(
       profileFields.skills = skills.split(',').map(skill => skill.trim());
     }
 
-    try {
-      let profile = Profile.findOne({ user: req.user.id });
-      if (profile) {
-        // Update
-        profile = await Profile.findOneAndUpdate(
-          { user: req.user.id },
-          { $set: profileFields },
-          { new: true }
-        );
-        return res.json(profile);
-      }
+    // Build social object and add to profileFields
+    const socialfields = { youtube, twitter, instagram, linkedin, facebook };
 
-      // Create
-      profile = new Profile(profileFields);
-      await profile.save();
+    for (const [key, value] of Object.entries(socialfields)) {
+      if (value && value.length > 0)
+        socialfields[key] = normalize(value, { forceHttps: true });
+    }
+    profileFields.social = socialfields;
+    try {
+      // Using upsert option (creates new doc if no match is found):
+      let profile = await Profile.findOneAndUpdate(
+        { user: req.user.id },
+        { $set: profileFields },
+        { new: true, upsert: true }
+      );
       res.json(profile);
     } catch (err) {
       console.error(err.message);
-      res.status(500).json({ msg: 'Server Error' });
+      res.status(500).send('Server Error');
     }
   }
 );

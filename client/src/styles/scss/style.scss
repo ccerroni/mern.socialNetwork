@@ -145,10 +145,10 @@ img {
       margin-bottom: 1rem;
       padding-bottom: 1rem;
       border-bottom: #ccc 1px dotted;
-    }
-
-    &:last-child {
-      border: none;
+      &:last-child {
+        border: none;
+        border-bottom: none !important;
+      }
     }
 
     p {
